@@ -2,13 +2,12 @@ module uart_rx #(
     parameter SRC_FREQ = 76800,
     parameter BAUDRATE = 9600
 )(
-    input  logic       clk,      // System Clock
-    input  logic       rx,       // UART Rx line
-    output logic       rx_ready, // Pulse high for 1 clk cycle
-    output logic [7:0] rx_data   // Captured byte
+    input  logic       clk,      
+    input  logic       rx,       
+    output logic       rx_ready, 
+    output logic [7:0] rx_data   
 );
 
-    // --- STATES ---
     localparam [1:0] 
         IDLE    = 2'b00,
         RX_DATA = 2'b01,
@@ -19,7 +18,6 @@ module uart_rx #(
     logic       uart_clk;
     logic       ready_toggle = 0;
 
-    // --- CLOCK MULTIPLIER ---
     clock_mul #(
         .SRC_FREQ(SRC_FREQ),
         .OUT_FREQ(BAUDRATE)
@@ -28,7 +26,6 @@ module uart_rx #(
         .out_clk(uart_clk)
     );
 
-    // --- STATE MACHINE (UART Clock Domain) ---
     always_ff @(posedge uart_clk) begin
         case (state)
             IDLE: begin
@@ -58,12 +55,9 @@ module uart_rx #(
         endcase
     end
 
-    // --- CROSS CLOCK DOMAIN (System Clock Domain) ---
-    // This logic ensures rx_ready is high for exactly ONE system clock cycle
     logic [2:0] sync_regs = 3'b000;
     always_ff @(posedge clk) begin
         sync_regs <= {sync_regs[1:0], ready_toggle};
-        // Detects the edge of the toggle (0->1 or 1->0)
         rx_ready <= sync_regs[2] ^ sync_regs[1];
     end
 
