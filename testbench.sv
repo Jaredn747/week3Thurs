@@ -1,7 +1,5 @@
 `timescale 1ns / 1ps
 
-`include "uart_rx.sv"
-
 module testbench();
 
 parameter TX_DATA_VALUE = 8'hAB;
